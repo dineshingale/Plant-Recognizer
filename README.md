@@ -1,63 +1,103 @@
-# 🌼 Plant Recognizer
+# � Plant Recognizer
 
-A Python-based flower recognition system using TensorFlow and TensorFlow Hub. This application identifies various plant species from images using the pre-trained MobileNet-based AIY Plants model.
+A full-stack AI application for identifying plant species. It features a modern **React + Vite** frontend with a beautiful UI and a **FastAPI + TensorFlow** backend for real-time inference using the MobileNet-based AIY Plants model.
+
+![Plant Recognizer UI](https://images.unsplash.com/photo-1542382156909-9ae37b3f56fd?auto=format&fit=crop&q=80&w=2000&ixlib=rb-4.0.3)
 
 ## 🚀 Features
 
-- **Plant Identification**: Uses a pre-trained deep learning model to classify plant images.
-- **Top-5 Predictions**: display the top 5 most likely plant matches with confidence percentages.
-- **Visual Feedback**: Shows the input image alongside a prediction confidence chart.
-- **Input Flexibility**: 
-    - Provide a full file path.
-    - Select from available images in the current directory.
-- **Automatic Setup**: Automatically downloads the required label map on first run.
+*   **Real-time Recognition**: Upload any plant image and get instant identification.
+*   **Deep Learning**: Utilizing Google's pre-trained AIY Plants V1 model via TensorFlow Hub.
+*   **Interactive UI**: Drag-and-drop uploads, live previews, and detailed results card.
+*   **Result Insights**:
+    *   Scientific Name & Common Name
+    *   Confidence Score
+    *   Health Status Check
+    *   Detailed Description
 
-## 🛠️ Installation
+## 🛠️ Technology Stack
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/dineshingale/Plant-Recognizer.git
-    cd Plant-Recognizer
-    ```
+*   **Frontend**: React, Vite, Tailwind CSS, Lucide React
+*   **Backend**: FastAPI, Python 3.9+, Uvicorn
+*   **AI/ML**: TensorFlow, TensorFlow Hub, Pillow, NumPy
 
-2.  **Set up a virtual environment (Recommended):**
-    ```bash
-    python -m venv venv
-    
-    # Windows
-    .\venv\Scripts\activate
-    
-    # macOS/Linux
-    source venv/bin/activate
-    ```
+## � Installation & Setup
 
-3.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+### Prerequisites
+*   Node.js (v18+)
+*   Python (v3.9+)
 
-## 📖 Usage
+### 1. Clone the Repository
+```bash
+git clone https://github.com/dineshingale/Plant-Recognizer.git
+cd Plant-Recognizer
+```
 
-1.  **Run the main script:**
-    ```bash
-    python src/main.py
-    ```
+### 2. Backend Setup
+Set up the Python server to handle predictions.
 
-2.  **Follow the on-screen prompts:**
-    - **Option 1**: Paste the full path to an image file on your computer.
-    - **Option 2**: Automatically detect and choose from images in the project folder.
-    - **Option 3**: Exit the application.
+```bash
+# Create virtual environment
+python -m venv venv
 
-## 📦 Dependencies
+# Activate (Windows)
+.\venv\Scripts\activate
 
-- **TensorFlow** (2.12.0)
-- **TensorFlow Hub** (0.13.0)
-- **Pillow** (Image processing)
-- **Matplotlib** (Visualization)
-- **NumPy**
+# Install dependencies (FastAPI, TensorFlow, etc.)
+pip install -r requirements.txt
 
-## 🤖 Model Information
+# Run the API Server
+python server.py
+```
+> The server will start at `http://localhost:8000`
 
-This project uses the **Google AIY Plants V1** model from TensorFlow Hub:
-- **Model Handle**: `https://tfhub.dev/google/aiy/vision/classifier/plants_V1/1`
-- **Input Shape**: 224x224x3
+### 3. Frontend Setup
+Launch the React Client interface.
+
+```bash
+# Open a new terminal and navigate to Client
+cd Client
+
+# Install dependencies
+npm install
+
+# Run Development Server
+npm run dev
+```
+> The app will open at `http://localhost:5173`
+
+## 📖 Usage Guide
+
+1.  Ensure both **Server** (port 8000) and **Client** (port 5173) are running.
+2.  Open `http://localhost:5173`.
+3.  **To Identify a Plant:**
+    *   Drag & drop an image onto the upload zone.
+    *   Or click to browse your files.
+    *   Click the **Recognize Plant** button.
+4.  View the detailed results including confidence score and species info.
+
+## � Project Structure
+
+```
+Plant-Recognizer/
+├── Client/                 # React Frontend
+│   ├── src/
+│   │   ├── components/     # UI Components (Navbar, ImageUpload, ResultSection)
+│   │   ├── App.jsx         # Main Logic
+│   │   └── main.jsx        # Entry Point
+│   └── package.json
+├── src/                    # Legacy CLI Script (optional)
+├── server.py               # FastAPI Backend Server
+├── requirements.txt        # Python Dependencies
+└── run.py                  # Helper Script
+```
+
+## 🤖 Model Details
+
+This project uses the **Google AIY Plants V1** model:
+*   **Source**: [TensorFlow Hub](https://tfhub.dev/google/aiy/vision/classifier/plants_V1/1)
+*   **Architecture**: MobileNet-based (optimized for speed/mobile)
+*   **Input**: 224x224 RGB Images
+
+---
+*Built with 💚 using React & Python*
