@@ -6,34 +6,55 @@ import ResultSection from './components/ResultSection';
 function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [image, setImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleImageSelect = (file) => {
+    setSelectedFile(file);
     const reader = new FileReader();
     reader.onload = (e) => {
       setImage(e.target.result);
-      setResult(null); // Clear previous result on new image
+      setResult(null);
+      setError(null);
     };
     reader.readAsDataURL(file);
   };
 
   const handleClear = () => {
     setImage(null);
+    setSelectedFile(null);
     setResult(null);
+    setError(null);
   };
 
-  const handleRecognize = () => {
+  const handleRecognize = async () => {
+    if (!selectedFile) return;
+
     setIsAnalyzing(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      setResult({
-        name: 'Monstera Deliciosa',
-        scientificName: 'Monstera deliciosa',
-        confidence: 98,
-        description: 'Monstera deliciosa, also known as the Swiss Cheese Plant, is a species of flowering plant native to tropical forests of southern Mexico, south to Panama. It has become a mildly invasive species in many tropical areas and has become a very popular houseplant in temperate zones.',
+    setError(null);
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const response = await fetch('http://localhost:8000/predict', {
+        method: 'POST',
+        body: formData,
       });
-    }, 2000);
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze image');
+      }
+
+      const data = await response.json();
+      setResult(data);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to connect to the recognition server. Please ensure it is running.');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -44,6 +65,12 @@ function App() {
         hasImage={!!image}
       />
       <main className="container mx-auto p-4 max-w-2xl">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6 text-center animate-in fade-in slide-in-from-top-2">
+            {error}
+          </div>
+        )}
+
         <div className="my-8">
           <ImageUpload
             image={image}
