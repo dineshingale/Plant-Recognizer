@@ -58,4 +58,5 @@ jobs:
           working-directory: ./Client
           start: npm run dev
           wait-on: 'http://localhost:5173'
+          install: false
           browser: chrome
