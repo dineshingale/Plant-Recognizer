@@ -5,7 +5,13 @@ import ResultSection from './components/ResultSection';
 
 function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [hasImage, setHasImage] = useState(true); // Default true for demo
+  const [image, setImage] = useState(null);
+
+  const handleImageSelect = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => setImage(e.target.result);
+    reader.readAsDataURL(file);
+  };
 
   const handleRecognize = () => {
     setIsAnalyzing(true);
@@ -20,11 +26,15 @@ function App() {
       <Navbar
         onRecognize={handleRecognize}
         isAnalyzing={isAnalyzing}
-        hasImage={hasImage}
+        hasImage={!!image}
       />
       <main className="container mx-auto p-4 max-w-2xl">
         <div className="my-8">
-          <ImageUpload />
+          <ImageUpload
+            image={image}
+            onImageSelect={handleImageSelect}
+            onClear={() => setImage(null)}
+          />
         </div>
         <ResultSection />
       </main>
