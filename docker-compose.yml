@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Backend Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server.py:/app/server.py
+      - ./labelmap.txt:/app/labelmap.txt
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - plant-network
+
+  # Frontend Service
+  web:
+    build:
+      context: ./Client
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - plant-network
+
+networks:
+  plant-network:
+    driver: bridge
