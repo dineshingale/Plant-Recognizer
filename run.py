@@ -48,7 +48,15 @@ def run_server():
         # Run server.py using the current python executable
         subprocess.run([sys.executable, server_path], check=True)
     except subprocess.CalledProcessError as e:
-        print(f"\n❌ Error running server: {e}")
+        print("\n" + "!" * 60)
+        print("❌ Server failed to start!")
+        print("!" * 60)
+        print("\nPossible Causes:")
+        print("1. Port 8000 is already in use.")
+        print("   -> Check if another terminal is running 'python server.py' or 'run.py'")
+        print("   -> Stop the other process and try again.")
+        print("-" * 60)
+        print(f"Details: {e}")
         sys.exit(1)
     except KeyboardInterrupt:
         print("\n\n⚠️  Server stopped by user")
