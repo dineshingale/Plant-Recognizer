@@ -42,7 +42,10 @@ jobs:
           
       - name: Install Dependencies
         working-directory: ./Client
-        run: npm ci
+        run: |
+          npm ci
+          npx cypress install
+          npx cypress verify
 
       - name: Lint
         working-directory: ./Client
