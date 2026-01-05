@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Upload, Camera, X } from 'lucide-react';
 
 const ImageUpload = ({ image, onImageSelect, onClear }) => {
@@ -37,13 +37,13 @@ const ImageUpload = ({ image, onImageSelect, onClear }) => {
             onDrop={handleDrop}
             onClick={() => document.getElementById('fileInput').click()}
             className={`
-        group relative border-2 border-dashed rounded-[2rem] p-4 transition-all duration-300 ease-in-out min-h-[450px] flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden
+        group relative border - 2 border - dashed rounded - [2rem] p - 4 transition - all duration - 300 ease -in -out min - h - [450px] flex flex - col items - center justify - center text - center cursor - pointer overflow - hidden
         ${isDragging
                     ? 'border-emerald-500 bg-emerald-50/50 scale-[1.02] shadow-2xl shadow-emerald-100/50'
                     : 'border-gray-200 bg-white hover:border-emerald-400 hover:shadow-xl hover:shadow-gray-100'
                 }
         ${image ? 'border-none p-0 bg-gray-900' : ''}
-      `}
+`}
         >
             <input
                 id="fileInput"
@@ -75,10 +75,10 @@ const ImageUpload = ({ image, onImageSelect, onClear }) => {
             ) : (
                 <div className="space-y-6 pointer-events-none">
                     <div className={`
-            w-24 h-24 rounded-3xl flex items-center justify-center mx-auto transition-all duration-300
+w - 24 h - 24 rounded - 3xl flex items - center justify - center mx - auto transition - all duration - 300
             ${isDragging ? 'bg-white scale-110 shadow-lg' : 'bg-emerald-50 group-hover:scale-110 group-hover:bg-emerald-100'}
-          `}>
-                        <Upload className={`w-10 h-10 transition-colors ${isDragging ? 'text-emerald-600' : 'text-emerald-500'}`} />
+`}>
+                        <Upload className={`w - 10 h - 10 transition - colors ${isDragging ? 'text-emerald-600' : 'text-emerald-500'} `} />
                     </div>
                     <div className="space-y-2">
                         <h3 className="text-2xl font-bold text-gray-800">

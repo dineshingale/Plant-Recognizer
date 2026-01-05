@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Leaf, Loader2, ScanLine } from 'lucide-react';
 
 const Navbar = ({ onRecognize, isAnalyzing, hasImage }) => {

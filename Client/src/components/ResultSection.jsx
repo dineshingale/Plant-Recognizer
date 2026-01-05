@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { CheckCircle, Leaf } from 'lucide-react';
 
 const ResultSection = ({ result }) => {
