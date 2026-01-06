@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: ./Client
+      dockerfile: Dockerfile
+    ports:
+      - "4173:4173"
+    environment:
+      - HOST=0.0.0.0
+
+  selenium:
+    image: selenium/standalone-chrome:latest
+    ports:
+      - "4444:4444"
+    shm_size: "2gb"
+
+  test-runner:
+    image: python:3.10
+    volumes:
+      - .:/app
+    working_dir: /app
+    depends_on:
+      - app
+      - selenium
+    environment:
+      - SELENIUM_REMOTE_URL=http://selenium:4444/wd/hub
+      - APP_URL=http://app:4173
+    command: >
+      sh -c "pip install selenium pytest webdriver-manager &&
+             python -m pytest tests/test_e2e.py --junitxml=test-results.xml"
