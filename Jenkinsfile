@@ -7,7 +7,6 @@ pipeline {
         PYTHON_VERSION = '3.10'
     }
 
-    stages {
     triggers {
         pollSCM('H/2 * * * *') // Poll every 2 minutes for changes
     }
