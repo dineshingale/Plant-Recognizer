@@ -17,10 +17,12 @@ pipeline {
         stage('Backend Setup & Check') {
             steps {
                 script {
-                    // Windows-specific python setup, adjust if running on Linux Jenkins agents
-                    bat 'python -m pip install --upgrade pip'
-                    bat 'pip install -r requirements.txt'
-                    bat 'python -m compileall server.py'
+                    // Using absolute path for Python to avoid PATH issues in Jenkins
+                    def python = 'C:\\Python314\\python.exe'
+                    
+                    bat "${python} -m pip install --upgrade pip"
+                    bat "${python} -m pip install -r requirements.txt"
+                    bat "${python} -m compileall server.py"
                 }
             }
         }
@@ -54,7 +56,8 @@ pipeline {
                         },
                         "Run Tests": {
                             sleep 10 // Wait for server to definitely be up
-                            bat 'pytest tests/test_e2e.py --junitxml=test-results.xml'
+                            // Use absolute path for pytest invocation
+                            bat 'C:\\Python314\\python.exe -m pytest tests/test_e2e.py --junitxml=test-results.xml'
                         }
                     )
                 }
