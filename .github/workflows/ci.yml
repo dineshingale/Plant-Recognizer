@@ -40,26 +40,15 @@ jobs:
           cache: 'npm'
           cache-dependency-path: Client/package-lock.json
           
-      - name: Install Dependencies
+      - name: Install Frontend Dependencies
         working-directory: ./Client
-        run: |
-          npm ci
-          npx cypress install
-          npx cypress verify
+        run: npm ci
 
-      - name: Lint
-        working-directory: ./Client
-        run: npm run lint
-
-      - name: Build
+      - name: Build Frontend
         working-directory: ./Client
         run: npm run build
 
-      - name: Cypress Run
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./Client
-          start: npm run dev
-          wait-on: 'http://127.0.0.1:5173'
-          install: false
-          browser: chrome
+      - name: Run Cypress Tests
+        working-directory: ./Client
+        # This single command handles serving and testing
+        run: npm run test:ci
