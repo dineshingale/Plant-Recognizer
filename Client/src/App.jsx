@@ -64,21 +64,25 @@ function App() {
         isAnalyzing={isAnalyzing}
         hasImage={!!image}
       />
-      <main className="container mx-auto p-4 max-w-2xl">
+      <main className="container mx-auto p-4 max-w-6xl">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6 text-center animate-in fade-in slide-in-from-top-2">
             {error}
           </div>
         )}
 
-        <div className="my-8">
-          <ImageUpload
-            image={image}
-            onImageSelect={handleImageSelect}
-            onClear={handleClear}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-8 items-start">
+          <div className="w-full">
+            <ImageUpload
+              image={image}
+              onImageSelect={handleImageSelect}
+              onClear={handleClear}
+            />
+          </div>
+          <div className="w-full">
+            <ResultSection result={result} />
+          </div>
         </div>
-        <ResultSection result={result} />
       </main>
     </div>
   );
