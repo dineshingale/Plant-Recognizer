@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview --port 4173 --host 127.0.0.1",
     "test:e2e": "cypress run",
-    "test:ci": "start-server-and-test preview http://127.0.0.1:4173 cy:run"
+    "test:ci": "start-server-and-test preview http://127.0.0.1:4173 \"cypress run --record\""
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.18",
