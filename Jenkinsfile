@@ -35,7 +35,7 @@ pipeline {
             // Archive results (will need to extract them from docker volume if strictly isolated, 
             // but since we volume mount .:/app, the XML depends on file permissions. 
             // Assuming host mount works on Windows Docker Desktop).
-            junit 'test-results.xml'
+            // junit 'test-results.xml'
         }
         success {
             echo 'Pipeline executed successfully!'

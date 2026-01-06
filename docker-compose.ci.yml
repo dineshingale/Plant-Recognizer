@@ -27,4 +27,4 @@ services:
       - APP_URL=http://app:4173
     command: >
       sh -c "pip install selenium pytest webdriver-manager &&
-             python -m pytest tests/test_e2e.py --junitxml=test-results.xml"
+             python -m pytest tests/test_e2e.py"
