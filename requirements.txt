@@ -1,5 +1,4 @@
-tensorflow-cpu
-tensorflow_hub==0.13.0
+tensorflow-cpu==2.15.0
 pillow>=9.0.0
 numpy>=1.21.0
 matplotlib>=3.4.0
