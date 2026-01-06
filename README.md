@@ -2,7 +2,7 @@
 
 A full-stack AI application for identifying plant species. It features a modern **React + Vite** frontend with a beautiful UI and a **FastAPI + TensorFlow** backend for real-time inference using the MobileNet-based AIY Plants model.
 
-![Plant Recognizer UI](https://images.unsplash.com/photo-1542382156909-9ae37b3f56fd?auto=format&fit=crop&q=80&w=2000&ixlib=rb-4.0.3)
+![Plant Recognizer UI](./Screenshots/Dashboard.jpeg)
 
 ## 🚀 Features
 
