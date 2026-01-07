@@ -1,5 +1,7 @@
+# We use tflite-runtime if available (super small), 
+# but fallback to tensorflow-cpu if needed.
+# For Render, we prefer tflite-runtime or keeping TF but NOT loading Keras.
 tensorflow-cpu==2.15.0
-tensorflow-hub>=0.16.1
 pillow>=9.0.0
 numpy>=1.21.0
 requests>=2.28.0
