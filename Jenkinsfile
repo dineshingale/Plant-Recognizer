@@ -53,10 +53,8 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
         }
 
         stage('Merge & Push') {
-            // 🔹 Only run this stage if the previous stages succeeded
             when {
                 expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-                // Optional: Prevent merging 'main' into 'main' (infinite loop protection)
                 not { branch 'main' } 
             }
             steps {
@@ -64,24 +62,26 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
                 withCredentials([usernamePassword(credentialsId: 'github-token-auth', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     bat """
                         @echo off
-                        echo 🔄 Switching to MAIN branch...
                         
-                        :: Configure Git Identity for Jenkins
+                        :: 🧹 FORCE CLEANUP (Crucial Step)
+                        echo Cleaning workspace...
+                        git reset --hard
+                        git clean -fd
+
+                        :: ⚙️ GIT CONFIG
                         git config user.email "jenkins-bot@example.com"
                         git config user.name "Jenkins CI"
 
-                        :: Fetch latest main
+                        :: 🔄 MERGE PROCESS
+                        echo Switching to MAIN...
                         git fetch origin main
-
-                        :: Checkout main
                         git checkout main
                         git pull origin main
 
-                        echo 🔀 Merging commit %GIT_COMMIT% into main...
+                        echo Merging feature branch...
                         git merge %GIT_COMMIT%
 
-                        echo 🚀 Pushing to GitHub...
-                        :: We inject the token directly into the URL for authentication
+                        echo Pushing to GitHub...
                         git push https://%GIT_TOKEN%@${GIT_REPO_URL} main
                     """
                 }
