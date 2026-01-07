@@ -2,7 +2,6 @@ tensorflow-cpu==2.15.0
 tensorflow-hub>=0.16.1
 pillow>=9.0.0
 numpy>=1.21.0
-matplotlib>=3.4.0
 requests>=2.28.0
 fastapi
 uvicorn
