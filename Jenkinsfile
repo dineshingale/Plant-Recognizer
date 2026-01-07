@@ -4,15 +4,15 @@ pipeline {
     environment {
         // Global variables
         IMAGE_TAG = "plant-recognizer:build-${env.BUILD_NUMBER}"
+        DOCKER_CONTAINER_NAME = "plant-test-runner"
+        
         // Define as String to avoid Groovy styling warnings
         FAILURE_STAGE = "Initialization" 
         
-        // Vercel Hook
-        VERCEL_HOOK = "https://api.vercel.com/v1/integrations/deploy/prj_9VOoRKBHJtAtG3lTEPhsVUdIyjMf/UTSLCpjhHf"
+        // ALERT EMAIL
         ALERT_EMAIL = "dineshingale2003@gmail.com"
         
-        // For Usage in Jenkins Pipeline only (Docker Environment)
-        // We override this to localhost because we are running the backend INSIDE the container now.
+        // Backend runs locally inside the container (localhost inside Docker)
         REACT_APP_API_URL = "http://localhost:8000"
     }
 
@@ -28,8 +28,9 @@ pipeline {
             steps {
                 script { FAILURE_STAGE = "Environment Setup" }
                 echo 'Creating .env file for Docker container...'
+                
                 // Injecting Environment Variables for Vite
-                // Note: Vite requires VITE_ prefix for client-side exposure
+                // We point the API to localhost because both Frontend and Backend share the container network
                 writeFile file: 'Client/.env', text: """
 VITE_API_URL=${REACT_APP_API_URL}
 DANGEROUSLY_DISABLE_HOST_CHECK=true
@@ -40,46 +41,41 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
         stage('Build & Test') {
             steps {
                 script { FAILURE_STAGE = "Docker Build & Test" }
+                
                 // 1. Build Docker Image
                 bat "docker build -t ${IMAGE_TAG} ."
 
-                // 2. Run Container (Named, No RM)
-                // We use || exit 0 to ensure we proceed to extraction even if tests fail
+                // 2. Run Container (Named, No --rm)
+                // We use || exit 0 to ensure the pipeline continues even if tests fail (so we can extract the report)
+                // We mount ${env.WORKSPACE} to /app so we can map files back if needed, but rely on docker cp for extraction
                 bat """
-                    docker run --name plant-test-runner ^
+                    docker run --name ${DOCKER_CONTAINER_NAME} ^
                     --shm-size=2g ^
-                    -v "%CD%":/app ^
+                    -v "${env.WORKSPACE}":/app ^
                     -v /app/Client/node_modules ^
                     ${IMAGE_TAG} || exit 0
                 """
                 
-                // 3. Extract Test Results (Bypassing Permission Issues)
-                bat "docker cp plant-test-runner:/tmp/test-results.xml test-results.xml"
+                // 3. Extract Test Results (Bypassing Windows Permission Issues)
+                // This copies the file from the Linux container to the Windows host
+                bat "docker cp ${DOCKER_CONTAINER_NAME}:/tmp/test-results.xml test-results.xml"
                 
                 // 4. Cleanup Container
-                bat "docker rm -f plant-test-runner"
+                bat "docker rm -f ${DOCKER_CONTAINER_NAME}"
             }
         }
 
-        stage('Deploy') {
-            steps {
-                script { FAILURE_STAGE = "Deployment Trigger" }
-                echo 'Tests Passed - Triggering Vercel Deployment...'
-                
-                // Using PowerShell to trigger webhook
-                powershell """
-                    \$response = Invoke-RestMethod -Uri '${VERCEL_HOOK}' -Method Post
-                    Write-Output "Deployment Triggered: \$response"
-                """
-            }
-        }
+        // ❌ DEPLOY STAGE REMOVED
+        // Deployment is now handled automatically by Vercel when you merge this PR to 'main'.
     }
 
     post {
         always {
-            // Archive Test Artifacts (Screenshots, XML Validation)
-            archiveArtifacts artifacts: '*.png, *.xml, frontend_logs.txt', allowEmptyArchive: true
+            // Read the XML report we extracted in step 3
             junit 'test-results.xml'
+            
+            // Archive Test Artifacts (Screenshots, XML, logs)
+            archiveArtifacts artifacts: '*.png, *.xml, frontend_logs.txt', allowEmptyArchive: true
         }
         
         failure {
@@ -103,7 +99,7 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
         }
         
         success {
-            echo "✅ Pipeline Succeeded!"
+            echo "✅ Integration Tests Passed! You are safe to merge this Pull Request."
         }
     }
 }
