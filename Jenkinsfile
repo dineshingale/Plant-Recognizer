@@ -4,8 +4,10 @@ pipeline {
     environment {
         // Global variables
         IMAGE_TAG = "plant-recognizer:build-${env.BUILD_NUMBER}"
-        FAILURE_STAGE = "Initialization"
-        // Vercel Hook (Make sure this secret is actually safe, or use Credentials Binding)
+        // Define as String to avoid Groovy styling warnings
+        FAILURE_STAGE = "Initialization" 
+        
+        // Vercel Hook
         VERCEL_HOOK = "https://api.vercel.com/v1/integrations/deploy/prj_9VOoRKBHJtAtG3lTEPhsVUdIyjMf/UTSLCpjhHf"
         ALERT_EMAIL = "dineshingale2003@gmail.com"
         REACT_APP_API_URL = "https://plant-recognizer-8r8d.onrender.com/"

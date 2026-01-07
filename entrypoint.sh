@@ -38,9 +38,14 @@ echo "🧪 Running Selenium E2E Tests..."
 export BASE_URL="http://localhost:3000"
 
 # Running pytests
-# We use '|| true' temporarily to ensure we catch the exit code specifically
-python -m pytest tests/test_app.py -v --junitxml=test-results.xml
+# Write to /tmp first to avoid permission crashes on mounted volumes
+echo "Running pytest..."
+python -m pytest tests/test_app.py -v --junitxml=/tmp/test-results.xml
 TEST_EXIT_CODE=$?
+
+# Attempt to save results back to host (Safe Move)
+echo "Attempting to save test results..."
+cp /tmp/test-results.xml ./test-results.xml || echo "⚠️ Warning: Could not save test-results.xml to host (Permission Issue). Build will proceed."
 
 # 4. Cleanup & Exit
 echo "🛑 Stopping Frontend..."
