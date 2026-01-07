@@ -1,0 +1,4 @@
+* text=auto
+
+# Force LF line endings for shell scripts (Crucial for Docker on Windows)
+*.sh text eol=lf
