@@ -3,7 +3,19 @@ set -e
 
 echo "🚀 [entrypoint.sh] Starting Pipeline Environment..."
 
-# 1. Start React App (Vite) in Background
+# 1. Start Backend (Uvicorn) in Background
+# We must use proper python path and ensure it listens on 0.0.0.0
+echo "🚀 Starting Backend (Uvicorn)..."
+# Using 'server:app' because your file is server.py
+# '&' sends it to background
+nohup uvicorn server:app --host 0.0.0.0 --port 8000 > backend_logs.txt 2>&1 &
+BACKEND_PID=$!
+
+# 2. Wait for Backend (TensorFlow needs time!)
+echo "⏳ Waiting 15s for Backend to initialize..."
+sleep 15
+
+# 3. Start React App (Vite) in Background
 # We MUST use --host to expose it to the container network, 
 # and --port 3000 to match the test expectations.
 echo "🔄 Starting Vite Server on 0.0.0.0:3000..."
@@ -48,8 +60,9 @@ echo "Attempting to save test results..."
 cp /tmp/test-results.xml ./test-results.xml || echo "⚠️ Warning: Could not save test-results.xml to host (Permission Issue). Build will proceed."
 
 # 4. Cleanup & Exit
-echo "🛑 Stopping Frontend..."
+echo "🛑 Stopping Services..."
 kill $FRONTEND_PID
+kill $BACKEND_PID
 
 if [ $TEST_EXIT_CODE -eq 0 ]; then
     echo "🎉 Tests Passed!"

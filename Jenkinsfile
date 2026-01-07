@@ -10,7 +10,10 @@ pipeline {
         // Vercel Hook
         VERCEL_HOOK = "https://api.vercel.com/v1/integrations/deploy/prj_9VOoRKBHJtAtG3lTEPhsVUdIyjMf/UTSLCpjhHf"
         ALERT_EMAIL = "dineshingale2003@gmail.com"
-        REACT_APP_API_URL = "https://plant-recognizer-8r8d.onrender.com/"
+        
+        // For Usage in Jenkins Pipeline only (Docker Environment)
+        // We override this to localhost because we are running the backend INSIDE the container now.
+        REACT_APP_API_URL = "http://localhost:8000"
     }
 
     stages {
