@@ -115,5 +115,37 @@ This project uses the **Google AIY Plants V1** model, converted to **TFLite**:
 *   **Optimization**: Quantized/Float16 TFLite format for rapid CPU inference.
 *   **Input**: 224x224 RGB Images
 
+## 🔄 CI/CD Pipeline (Jenkins)
+
+This project uses a robust **Jenkins** pipeline running on **Docker**.
+
+### Pipeline Features
+*   **Dockerized Environment**: Tests run inside a self-contained Docker container (Python 3.9 + Node 20 + Chrome).
+*   **Self-Contained E2E Testing**: Backend and frontend start locally inside the container for integration testing.
+*   **Artifact Extraction**: Test reports (`junit`) and screenshots are safely extracted from Docker to Windows.
+*   **Auto-Merge**: Merges to `main` ONLY if tests pass.
+*   **Failsafe**: Prevents broken code from reaching production.
+
+### How to Run Locally
+To simulate the CI environment:
+```bash
+# Build the image
+docker build -t plant-test .
+
+# Run the full pipeline script
+docker run --rm -v %CD%:/app plant-test
+```
+
+## 🧪 Testing
+
+We use **Selenium** with **Pytest** for End-to-End (E2E) testing.
+
+```bash
+# Run tests manually
+python -m pytest tests/test_app.py
+```
+*   **Headless Mode**: Enabled by default in CI, disabled locally for debugging.
+*   **Artifacts**: Screenshots of failures are saved to the project root.
+
 ---
 *Built with 💚 using React & Python*
