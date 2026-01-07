@@ -1,17 +1,24 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-import tensorflow as tf
-import tensorflow_hub as hub
 import numpy as np
 from PIL import Image
 import io
 import os
 import requests
 
+# --- TFLite Import Logic ---
+# Try to import the lightweight runtime first, fallback to full TF if needed
+try:
+    import tflite_runtime.interpreter as tflite
+    print("✅ Using TFLite Runtime")
+except ImportError:
+    import tensorflow.lite as tflite
+    print("⚠️  TFLite Runtime not found, using full TensorFlow (this is fine)")
+
 app = FastAPI()
 
-# Enable CORS for React Client
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,26 +27,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load Model (Global)
-print("⏳ Loading model...")
-model_url = "https://tfhub.dev/google/aiy/vision/classifier/plants_V1/1"
-model = tf.keras.Sequential([
-    hub.KerasLayer(model_url, input_shape=(224, 224, 3))
-])
-model.build([None, 224, 224, 3])
-print("✅ Model loaded!")
+# --- Load Model (Lightweight) ---
+MODEL_PATH = "plants.tflite"
 
-# Load Label Map
+if not os.path.exists(MODEL_PATH):
+    raise RuntimeError(f"❌ {MODEL_PATH} not found! Did you run convert_model.py?")
+
+print(f"⏳ Loading {MODEL_PATH}...")
+interpreter = tflite.Interpreter(model_path=MODEL_PATH)
+interpreter.allocate_tensors()
+
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+print("✅ Model loaded successfully!")
+
+# --- Load Label Map ---
 labelmap_path = "labelmap.txt"
 if not os.path.exists(labelmap_path):
-    # Quick fallback if file missing
-    labelmap_url = "https://storage.googleapis.com/aiy/vision/classifier/plants/labelmap.txt"
+    print("⏳ Downloading label map...")
+    url = "https://storage.googleapis.com/aiy/vision/classifier/plants/labelmap.txt"
     try:
-        response = requests.get(labelmap_url)
+        r = requests.get(url)
         with open(labelmap_path, 'w') as f:
-            f.write(response.text)
-    except:
-        pass 
+            f.write(r.text)
+    except Exception as e:
+        print(f"Warning: Could not download labels: {e}")
 
 def load_labels(path):
     labels = {}
@@ -65,18 +77,22 @@ def get_pretty_name(label):
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    # Read Image
+    # 1. Read and Process Image
     contents = await file.read()
     img = Image.open(io.BytesIO(contents)).convert('RGB')
     img = img.resize((224, 224))
     
-    # Preprocess
-    img_array = tf.keras.preprocessing.image.img_to_array(img)
-    img_array = tf.expand_dims(img_array, axis=0)
+    # Convert to numpy array and normalize [0, 1]
+    img_array = np.array(img, dtype=np.float32)
+    img_array = np.expand_dims(img_array, axis=0)
     img_array = img_array / 255.0
 
-    # Predict
-    predictions = model.predict(img_array)
+    # 2. Run Inference (TFLite style)
+    interpreter.set_tensor(input_details[0]['index'], img_array)
+    interpreter.invoke()
+    predictions = interpreter.get_tensor(output_details[0]['index'])
+
+    # 3. Process Results
     predicted_class = np.argmax(predictions[0])
     confidence = float(np.max(predictions[0]) * 100)
     
@@ -87,7 +103,7 @@ async def predict(file: UploadFile = File(...)):
         "name": pretty_name,
         "scientificName": raw_name.title(),
         "confidence": round(confidence, 1),
-        "description": f"This appears to be a healthy {pretty_name}. Identified with {round(confidence, 1)}% confidence.",
+        "description": f"This appears to be a healthy {pretty_name}.",
         "raw_label": raw_name
     }
 
