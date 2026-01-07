@@ -8,7 +8,7 @@ pipeline {
         ALERT_EMAIL = "dineshingale2003@gmail.com"
         REACT_APP_API_URL = "http://localhost:8000"
         
-        // 🔹 Replace this with your Git Repo URL (without https://)
+        // 🔹 Replace with your repo URL (no https://)
         GIT_REPO_URL = "github.com/dineshingale/Plant-Recognizer.git"
     }
 
@@ -37,7 +37,7 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
                 
                 bat "docker build -t ${IMAGE_TAG} ."
 
-                // Run Container & Test
+                // Run Container
                 bat """
                     docker run --name ${DOCKER_CONTAINER_NAME} ^
                     --shm-size=2g ^
@@ -49,6 +49,10 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
                 // Extract Report
                 bat "docker cp ${DOCKER_CONTAINER_NAME}:/tmp/test-results.xml test-results.xml"
                 bat "docker rm -f ${DOCKER_CONTAINER_NAME}"
+                
+                // 🔹 MOVED UP: Process results here BEFORE cleanup!
+                junit 'test-results.xml'
+                archiveArtifacts artifacts: '*.png, frontend_logs.txt', allowEmptyArchive: true
             }
         }
 
@@ -63,7 +67,7 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
                     bat """
                         @echo off
                         
-                        :: 🧹 FORCE CLEANUP (Crucial Step)
+                        :: 🧹 CLEANUP (This deletes test-results.xml, which is why we moved the junit step up!)
                         echo Cleaning workspace...
                         git reset --hard
                         git clean -fd
@@ -72,8 +76,7 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
                         git config user.email "jenkins-bot@example.com"
                         git config user.name "Jenkins CI"
 
-                        :: 🔄 MERGE PROCESS
-                        echo Switching to MAIN...
+                        :: 🔄 MERGE
                         git fetch origin main
                         git checkout main
                         git pull origin main
@@ -90,11 +93,6 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
     }
 
     post {
-        always {
-            archiveArtifacts artifacts: '*.png, *.xml, frontend_logs.txt', allowEmptyArchive: true
-            junit 'test-results.xml'
-        }
-        
         failure {
             echo "❌ Pipeline Failed at stage: ${env.FAILURE_STAGE}"
             emailext (
@@ -105,7 +103,7 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
         }
         
         success {
-            echo "✅ Tests Passed & Code Merged to Main! Deployment to Vercel should start shortly."
+            echo "✅ Tests Passed & Code Merged to Main! Deployment to Vercel triggered."
         }
     }
 }
