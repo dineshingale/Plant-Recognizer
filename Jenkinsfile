@@ -2,18 +2,14 @@ pipeline {
     agent any
 
     environment {
-        // Global variables
         IMAGE_TAG = "plant-recognizer:build-${env.BUILD_NUMBER}"
         DOCKER_CONTAINER_NAME = "plant-test-runner"
-        
-        // Define as String to avoid Groovy styling warnings
         FAILURE_STAGE = "Initialization" 
-        
-        // ALERT EMAIL
         ALERT_EMAIL = "dineshingale2003@gmail.com"
-        
-        // Backend runs locally inside the container (localhost inside Docker)
         REACT_APP_API_URL = "http://localhost:8000"
+        
+        // 🔹 Replace this with your Git Repo URL (without https://)
+        GIT_REPO_URL = "github.com/dineshingale/Plant-Recognizer.git"
     }
 
     stages {
@@ -28,9 +24,6 @@ pipeline {
             steps {
                 script { FAILURE_STAGE = "Environment Setup" }
                 echo 'Creating .env file for Docker container...'
-                
-                // Injecting Environment Variables for Vite
-                // We point the API to localhost because both Frontend and Backend share the container network
                 writeFile file: 'Client/.env', text: """
 VITE_API_URL=${REACT_APP_API_URL}
 DANGEROUSLY_DISABLE_HOST_CHECK=true
@@ -42,12 +35,9 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
             steps {
                 script { FAILURE_STAGE = "Docker Build & Test" }
                 
-                // 1. Build Docker Image
                 bat "docker build -t ${IMAGE_TAG} ."
 
-                // 2. Run Container (Named, No --rm)
-                // We use || exit 0 to ensure the pipeline continues even if tests fail (so we can extract the report)
-                // We mount ${env.WORKSPACE} to /app so we can map files back if needed, but rely on docker cp for extraction
+                // Run Container & Test
                 bat """
                     docker run --name ${DOCKER_CONTAINER_NAME} ^
                     --shm-size=2g ^
@@ -56,50 +46,66 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
                     ${IMAGE_TAG} || exit 0
                 """
                 
-                // 3. Extract Test Results (Bypassing Windows Permission Issues)
-                // This copies the file from the Linux container to the Windows host
+                // Extract Report
                 bat "docker cp ${DOCKER_CONTAINER_NAME}:/tmp/test-results.xml test-results.xml"
-                
-                // 4. Cleanup Container
                 bat "docker rm -f ${DOCKER_CONTAINER_NAME}"
             }
         }
 
-        // ❌ DEPLOY STAGE REMOVED
-        // Deployment is now handled automatically by Vercel when you merge this PR to 'main'.
+        stage('Merge & Push') {
+            // 🔹 Only run this stage if the previous stages succeeded
+            when {
+                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+                // Optional: Prevent merging 'main' into 'main' (infinite loop protection)
+                not { branch 'main' } 
+            }
+            steps {
+                script { FAILURE_STAGE = "Auto-Merge" }
+                withCredentials([usernamePassword(credentialsId: 'github-token-auth', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                    bat """
+                        @echo off
+                        echo 🔄 Switching to MAIN branch...
+                        
+                        :: Configure Git Identity for Jenkins
+                        git config user.email "jenkins-bot@example.com"
+                        git config user.name "Jenkins CI"
+
+                        :: Fetch latest main
+                        git fetch origin main
+
+                        :: Checkout main
+                        git checkout main
+                        git pull origin main
+
+                        echo 🔀 Merging commit %GIT_COMMIT% into main...
+                        git merge %GIT_COMMIT%
+
+                        echo 🚀 Pushing to GitHub...
+                        :: We inject the token directly into the URL for authentication
+                        git push https://%GIT_TOKEN%@${GIT_REPO_URL} main
+                    """
+                }
+            }
+        }
     }
 
     post {
         always {
-            // Read the XML report we extracted in step 3
-            junit 'test-results.xml'
-            
-            // Archive Test Artifacts (Screenshots, XML, logs)
             archiveArtifacts artifacts: '*.png, *.xml, frontend_logs.txt', allowEmptyArchive: true
+            junit 'test-results.xml'
         }
         
         failure {
             echo "❌ Pipeline Failed at stage: ${env.FAILURE_STAGE}"
             emailext (
                 subject: "FAILED: Plant-Recognizer Build #${env.BUILD_NUMBER}",
-                body: """
-<html>
-<body>
-    <h2 style="color:red;">❌ Build Failed</h2>
-    <p><b>Stage:</b> ${env.FAILURE_STAGE}</p>
-    <p><b>Check Console:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
-    <p>See attached screenshots/logs for details.</p>
-</body>
-</html>
-""",
-                to: "${env.ALERT_EMAIL}",
-                mimeType: 'text/html',
-                attachLog: true
+                body: "Build Failed. Check Console: ${env.BUILD_URL}",
+                to: "${env.ALERT_EMAIL}"
             )
         }
         
         success {
-            echo "✅ Integration Tests Passed! You are safe to merge this Pull Request."
+            echo "✅ Tests Passed & Code Merged to Main! Deployment to Vercel should start shortly."
         }
     }
 }
