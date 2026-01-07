@@ -43,16 +43,21 @@ DANGEROUSLY_DISABLE_HOST_CHECK=true
                 // 1. Build Docker Image
                 bat "docker build -t ${IMAGE_TAG} ."
 
-                // 2. Run Container (Mounting Project + Anonymous Volume for node_modules)
-                // We use -v %CD%:/app to mount current code, 
-                // BUT -v /app/Client/node_modules prevents local node_modules from conflicting
+                // 2. Run Container (Named, No RM)
+                // We use || exit 0 to ensure we proceed to extraction even if tests fail
                 bat """
-                    docker run --rm ^
+                    docker run --name plant-test-runner ^
                     --shm-size=2g ^
                     -v "%CD%":/app ^
                     -v /app/Client/node_modules ^
-                    ${IMAGE_TAG}
+                    ${IMAGE_TAG} || exit 0
                 """
+                
+                // 3. Extract Test Results (Bypassing Permission Issues)
+                bat "docker cp plant-test-runner:/tmp/test-results.xml test-results.xml"
+                
+                // 4. Cleanup Container
+                bat "docker rm -f plant-test-runner"
             }
         }
 

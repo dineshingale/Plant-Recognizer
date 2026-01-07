@@ -55,10 +55,6 @@ echo "Running pytest..."
 python -m pytest tests/test_app.py -v --junitxml=/tmp/test-results.xml
 TEST_EXIT_CODE=$?
 
-# Attempt to save results back to host (Safe Move)
-echo "Attempting to save test results..."
-cp /tmp/test-results.xml ./test-results.xml || echo "⚠️ Warning: Could not save test-results.xml to host (Permission Issue). Build will proceed."
-
 # 4. Cleanup & Exit
 echo "🛑 Stopping Services..."
 kill $FRONTEND_PID
