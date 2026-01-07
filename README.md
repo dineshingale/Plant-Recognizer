@@ -1,13 +1,13 @@
-# � Plant Recognizer
+# 🌿 Plant Recognizer
 
-A full-stack AI application for identifying plant species. It features a modern **React + Vite** frontend with a beautiful UI and a **FastAPI + TensorFlow** backend for real-time inference using the MobileNet-based AIY Plants model.
+A full-stack AI application for identifying plant species. It features a modern **React + Vite** frontend with a beautiful UI and a **FastAPI + TensorFlow Lite** backend for highly optimized, real-time inference using the MobileNet-based AIY Plants model.
 
 ![Plant Recognizer UI](./Screenshots/Dashboard.jpeg)
 
 ## 🚀 Features
 
 *   **Real-time Recognition**: Upload any plant image and get instant identification.
-*   **Deep Learning**: Utilizing Google's pre-trained AIY Plants V1 model via TensorFlow Hub.
+*   **Optimized AI**: Migrated to **TensorFlow Lite (TFLite)** for 90% smaller package size and faster inference.
 *   **Interactive UI**: Drag-and-drop uploads, live previews, and detailed results card.
 *   **Result Insights**:
     *   Scientific Name & Common Name
@@ -19,9 +19,9 @@ A full-stack AI application for identifying plant species. It features a modern 
 
 *   **Frontend**: React, Vite, Tailwind CSS, Lucide React
 *   **Backend**: FastAPI, Python 3.9+, Uvicorn
-*   **AI/ML**: TensorFlow, TensorFlow Hub, Pillow, NumPy
+*   **AI/ML**: TensorFlow Lite, NumPy, Pillow
 
-## � Installation & Setup
+## 📦 Installation & Setup
 
 ### Prerequisites
 *   Node.js (v18+)
@@ -34,7 +34,7 @@ cd Plant-Recognizer
 ```
 
 ### 2. Backend Setup
-Set up the Python server to handle predictions.
+Set up the Python server.
 
 ```bash
 # Create virtual environment
@@ -43,15 +43,29 @@ python -m venv venv
 # Activate (Windows)
 .\venv\Scripts\activate
 
-# Install dependencies (FastAPI, TensorFlow, etc.)
-pip install -r requirements.txt
+# Activate (Mac/Linux)
+source venv/bin/activate
 
-# Run the API Server
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### 3. Model Setup (Important!)
+Since we use a TFLite optimized model, you must generate/download it first.
+
+```bash
+# Run this script once to download and convert the model
+python convert_model.py
+```
+> This will generate a `plants.tflite` file in your root directory.
+
+### 4. Run the Server
+```bash
 python server.py
 ```
-> The server will start at `http://localhost:8000`
+> The API will available at `http://localhost:8000`
 
-### 3. Frontend Setup
+### 5. Frontend Setup
 Launch the React Client interface.
 
 ```bash
@@ -76,17 +90,19 @@ npm run dev
     *   Click the **Recognize Plant** button.
 4.  View the detailed results including confidence score and species info.
 
-## � Project Structure
+## 📂 Project Structure
 
 ```
 Plant-Recognizer/
 ├── Client/                 # React Frontend
 │   ├── src/
-│   │   ├── components/     # UI Components (Navbar, ImageUpload, ResultSection)
+│   │   ├── components/     # UI Components
 │   │   ├── App.jsx         # Main Logic
 │   │   └── main.jsx        # Entry Point
 │   └── package.json
-├── src/                    # Legacy CLI Script (optional)
+├── src/                    # Legacy CLI Script
+├── convert_model.py        # Script to generate TFLite model
+├── plants.tflite           # Optimized Model File (Generated)
 ├── server.py               # FastAPI Backend Server
 ├── requirements.txt        # Python Dependencies
 └── run.py                  # Helper Script
@@ -94,9 +110,9 @@ Plant-Recognizer/
 
 ## 🤖 Model Details
 
-This project uses the **Google AIY Plants V1** model:
+This project uses the **Google AIY Plants V1** model, converted to **TFLite**:
 *   **Source**: [TensorFlow Hub](https://tfhub.dev/google/aiy/vision/classifier/plants_V1/1)
-*   **Architecture**: MobileNet-based (optimized for speed/mobile)
+*   **Optimization**: Quantized/Float16 TFLite format for rapid CPU inference.
 *   **Input**: 224x224 RGB Images
 
 ---
