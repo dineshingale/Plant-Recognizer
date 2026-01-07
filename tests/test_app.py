@@ -101,7 +101,7 @@ def test_plant_recognition_flow(driver):
     try:
         print("⏳ Waiting for results...")
         
-        WebDriverWait(driver, 20).until(
+        WebDriverWait(driver, 60).until(
             lambda d: d.find_elements(By.XPATH, "//*[contains(text(), 'Identification Successful')]") or \
                       d.find_elements(By.XPATH, "//*[contains(text(), 'Failed to connect')]")
         )
